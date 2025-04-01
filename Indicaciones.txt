@@ -1,0 +1,216 @@
+
+For more detail, please visit:
+> [Import CSV data into MySQL using Node.js](https://bezkoder.com/node-js-csv-mysql/)
+
+> [Export MySQL data to CSV file using Node.js](https://bezkoder.com/node-js-export-mysql-csv-file/)
+
+
+Import CSV data into MySQL using Node.js
+ Last modified: August 17, 2021  bezkoder  Node.js
+In this tutorial, you will know how to use Node.js to import CSV data into MySQL Database table. To do this, we’re gonna guide you through 2 steps:
+
+Read CSV file using fs & fast-csv module
+Connect to MySQL Database and save CSV data using mysql module
+Related Post: Export MySQL data to CSV file using Node.js
+
+Rest API: Node.js: Upload CSV file data into Database with Express
+
+
+CSV Standardization overview
+A CSV (comma-separated values) file is a plain text file that contains data which format is described in RFC4180.
+
+This is a sample for content of a CSV file:
+
+id,name,createdAt
+1,Node,2019-09-03
+2,Vue,2019-09-06
+3,Angular,2019-09-09
+There is no formal format, most implementations follow these rules:
+
+1. Each record is located on a separate line, delimited by a line break (CRLF).
+
+aaa,bbb,ccc CRLF
+ddd,eee,fff CRLF
+...
+2. The last record in the file may or may not have an ending line break.
+
+...
+ddd,eee,fff CRLF
+zzz,yyy,xxx
+3. There maybe an optional header line appearing as the first line that contain names corresponding to the fields of each followed line in the file.
+
+field_1,field_2,field_3 CRLF
+aaa,bbb,ccc CRLF
+...
+4. There may be one or more fields, separated by commas. Each line should contain the same number of fields throughout the file. Spaces are considered part of a field and should not be ignored. The last field in the record must not be followed by a comma.
+
+aaa,bbb,ccc
+5. Each field may or may not be enclosed in double quotes (however some programs, such as Microsoft Excel, do not use double quotes at all).
+
+"aaa","bbb","ccc" CRLF
+zzz,yyy,xxx
+6. Fields containing line breaks (CRLF), double quotes, and commas should be enclosed in double-quotes.
+
+"aaa","b CRLF
+bb","ccc" CRLF (1st record)
+zzz,yyy,xxx (2nd record)
+7. If double-quotes are used to enclose fields, then a double-quote appearing inside a field must be escaped by preceding it with another double quote.
+
+"aaa","b""bb","ccc"
+Import CSV data into MySQL in Node.js
+Setup Node.js modules
+To read CSV file in Node.js, we use fast-csv module. And we also need mysql module to work with MySQL database.
+
+So we run the command: npm install fast-csv mysql.
+
+Read CSV file
+Now we need to import 2 necessary modules: fs & fast-csv
+
+const fs = require("fs");
+const fastcsv = require("fast-csv");
+Then we create a ReadStream from csv file, use fast-csv module to parse the data:
+
+let stream = fs.createReadStream("bezkoder.csv");
+let csvData = [];
+let csvStream = fastcsv
+  .parse()
+  .on("data", function(data) {
+    csvData.push(data);
+  })
+  .on("end", function() {
+    // remove the first line: header
+    csvData.shift();
+
+    // connect to the MySQL database
+    // save csvData
+  });
+
+stream.pipe(csvStream);
+You can see that we listen 2 events: on('data') and on('end'):
+– 'data' is emitted when a record is parsed, so we will append a record (data) in the handler function.
+– 'end' is emitted after the parsing is done. At this time, we have all records, so we will save data to MySQL in the handler function.
+
+Create MySQL table
+Assume that the csv content looks like:
+
+id,name,description,createdAt
+1,Node.js,JavaScript runtime environment,2019-09-03
+2,Vue.js,JavaScript Framework for building UI,2019-09-06
+3,Angular.js,Platform for building mobile & desktop web app,2019-09-09
+We need a table in MySQL database with 4 columns: [id, name, description, created_at]. So run the script to create category table:
+
+mysql> CREATE TABLE `category` (
+    -> `id` INT(11) NOT NULL,
+    -> `name` VARCHAR(255) NOT NULL,
+    -> `description` VARCHAR(255),
+    -> `created_at` DATE);
+
+
+mysql> DESCRIBE category;
++-------------+--------------+------+-----+---------+-------+
+| Field       | Type         | Null | Key | Default | Extra |
++-------------+--------------+------+-----+---------+-------+
+| id          | int(11)      | NO   |     | NULL    |       |
+| name        | varchar(255) | NO   |     | NULL    |       |
+| description | varchar(255) | YES  |     | NULL    |       |
+| created_at  | date         | YES  |     | NULL    |       |
++-------------+--------------+------+-----+---------+-------+
+Import CSV data to MySQL
+At the previous step, we have csvData array that contains all rows (except header). Now we’re gonna connect to MySQL database and save them.
+
+Remember that the code will be written inside 'end' event handler function.
+
+const mysql = require("mysql");
+
+/* .on("end", function() {...}) */
+// create a new connection to the database
+const connection = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "123456",
+  database: "testdb"
+});
+// open the connection
+connection.connect(error => {
+  if (error) {
+    console.error(error);
+  } else {
+    let query =
+      "INSERT INTO category (id, name, description, created_at) VALUES ?";
+    connection.query(query, [csvData], (error, response) => {
+      console.log(error || response);
+    });
+  }
+});
+Full code
+If you want to view the whole code, it looks like:
+
+const fs = require("fs");
+const mysql = require("mysql");
+const fastcsv = require("fast-csv");
+
+let stream = fs.createReadStream("bezkoder.csv");
+let csvData = [];
+let csvStream = fastcsv
+  .parse()
+  .on("data", function(data) {
+    csvData.push(data);
+  })
+  .on("end", function() {
+    // remove the first line: header
+    csvData.shift();
+
+    // create a new connection to the database
+    const connection = mysql.createConnection({
+      host: "localhost",
+      user: "root",
+      password: "123456",
+      database: "testdb"
+    });
+
+    // open the connection
+    connection.connect(error => {
+      if (error) {
+        console.error(error);
+      } else {
+        let query =
+          "INSERT INTO category (id, name, description, created_at) VALUES ?";
+        connection.query(query, [csvData], (error, response) => {
+          console.log(error || response);
+        });
+      }
+    });
+  });
+
+stream.pipe(csvStream);
+Check the result
+After running the code, the console shows:
+
+OkPacket {
+  fieldCount: 0,
+  affectedRows: 3,
+  insertId: 0,
+  serverStatus: 2,
+  warningCount: 0,
+  message: '&Records: 3  Duplicates: 0  Warnings: 0',
+  protocol41: true,
+  changedRows: 0 }
+Check MySQL table:
+
+mysql> SELECT * FROM category;
++----+------------+------------------------------------------------+------------+
+| id | name       | description                                    | created_at |
++----+------------+------------------------------------------------+------------+
+|  1 | Node.js    | JavaScript runtime environment                 | 2019-09-03 |
+|  2 | Vue.js     | JavaScript Framework for building UI           | 2019-09-06 |
+|  3 | Angular.js | Platform for building mobile & desktop web app | 2019-09-09 |
++----+------------+------------------------------------------------+------------+
+Conclusion
+Today we’ve learned way to read CSV file using fs & fast-csv, then we connect our app with MySQL database and save CSV data using mysql module.
+
+In the next tutorial, we’ll show you how to extract MySQL data to a CSV file.
+
+You can also know how to build Rest API with the post:
+Node.js: Upload CSV file data into Database with Express
+
+Happy learning! See you again.

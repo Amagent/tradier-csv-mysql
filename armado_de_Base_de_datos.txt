@@ -1,0 +1,32 @@
+Create MySQL table
+Assume that the csv content looks like:
+
+id,name,description,createdAt
+1,Node.js,JavaScript runtime environment,2019-09-03
+2,Vue.js,JavaScript Framework for building UI,2019-09-06
+3,Angular.js,Platform for building mobile & desktop web app,2019-09-09
+We need a table in MySQL database with 4 columns: [id, name, description, created_at]. So run the script to create category table:
+
+
+-------------------------------------------
+
+
+mysql> CREATE TABLE `category` (
+     `id` INT(11) NOT NULL,
+     `name` VARCHAR(255) NOT NULL,
+     `description` VARCHAR(255),
+     `created_at` DATE
+     );
+
+
+--------------------------------------------
+
+mysql> DESCRIBE category;
++-------------+--------------+------+-----+---------+-------+
+| Field       | Type         | Null | Key | Default | Extra |
++-------------+--------------+------+-----+---------+-------+
+| id          | int(11)      | NO   |     | NULL    |       |
+| name        | varchar(255) | NO   |     | NULL    |       |
+| description | varchar(255) | YES  |     | NULL    |       |
+| created_at  | date         | YES  |     | NULL    |       |
++-------------+--------------+------+-----+---------+-------+
