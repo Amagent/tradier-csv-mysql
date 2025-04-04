@@ -2,6 +2,9 @@ const fs = require("fs");
 const mysql = require("mysql");
 const fastcsv = require("fast-csv");
 
+const dotenv = require('dotenv').config({path: "../.env"}); // Load environment variables from .env file 
+
+
 let stream = fs.createReadStream("bezkoder.csv");
 let csvData = [];
 let csvStream = fastcsv
@@ -15,10 +18,11 @@ let csvStream = fastcsv
 
     // create a new connection to the database
     const connection = mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "123456",
-      database: "testdb"
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT,  
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD, 
+      database: process.env.DB_DATABASE,
     });
 
     // open the connection
@@ -31,8 +35,21 @@ let csvStream = fastcsv
         connection.query(query, [csvData], (error, response) => {
           console.log(error || response);
         });
+        console.log("Connected to the database!");
+      // close the connection
+      connection.end(error => {
+        if (error) {
+          console.error(error);
+        } else {
+          console.log("Connection closed!");
+        }
+      });
       }
     });
+    //console.log("csvData", csvData);
   });
+//console.log("stream", stream);
+  stream.pipe(csvStream);
 
-stream.pipe(csvStream);
+
+  console.log("al final");
