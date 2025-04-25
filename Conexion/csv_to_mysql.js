@@ -8,7 +8,7 @@ const dotenv = require('dotenv').config({path: "../.env"}); // Load environment 
 let stream = fs.createReadStream("datos_tradier.csv");
 let csvData = [];
 let csvStream = fastcsv
-  .parse()
+  .parse({ ignoreEmpty: true })
   .on("data", function(data) {
     csvData.push(data);
   })
@@ -30,8 +30,10 @@ let csvStream = fastcsv
       if (error) {
         console.error(error);
       } else {
+        //"SET SESSION sql_mode = ''" no se si se excribe asi. Pero poniendo INSERT IGNORE no da error
+        // connection.query("SET SESSION sql_mode = ''", (error, response) => {
         let query =
-          "INSERT INTO tradier_historial01 (symbol, price, type, description, quantity , commission, amount, date) VALUES ?";
+          "INSERT IGNORE INTO tradier_historial01 (symbol, price, type, description, quantity , commission, amount, date) VALUES ?";
         connection.query(query, [csvData], (error, response) => {
           console.log(error || response);
         });

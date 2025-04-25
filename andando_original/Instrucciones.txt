@@ -1,0 +1,4 @@
+entrar en el directorio antes de correr node:
+
+cd andando_original
+node cvs_to_mysql.js
