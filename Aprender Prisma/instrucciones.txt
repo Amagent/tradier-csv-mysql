@@ -1,0 +1,22 @@
+npm i prisma
+
+Para inicializar, convertir, despliegue
+npx prisma
+
+Instala el cliente:
+npm i @prisma/client
+
+Configuracion inicializar
+
+npx prisma init --datasorce-provider mysql 
+
+
+Para Traer los modelos de tablas existentes:
+npx prisma db pull
+
+Para actualizar dbs
+npx prisma migrate dev
+
+Migrate
+En desarrollo:
+npx prisma migrate dev

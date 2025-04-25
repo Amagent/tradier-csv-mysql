@@ -2,7 +2,7 @@
   "name": "nodejs-csv-mysql",
   "version": "1.0.0",
   "description": "Node.js demo: import csv data to MySQL & extract MySQL data to csv",
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,11 +13,13 @@
   "author": "bezkoder",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^6.6.0",
     "csv-writer": "^1.5.0",
     "dotenv": "^16.4.7",
     "fast-csv": "^3.4.0",
     "fs": "^0.0.1-security",
     "json2csv": "^4.5.3",
-    "mysql": "^2.17.1"
+    "mysql": "^2.17.1",
+    "prisma": "^6.6.0"
   }
 }
