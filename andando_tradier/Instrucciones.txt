@@ -1,0 +1,4 @@
+entrar en el directorio antes de correr node:
+
+cd andando_tradier
+node tradier_cvs_to_mysql.js
